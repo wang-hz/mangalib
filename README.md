@@ -34,3 +34,28 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Data Persistence
+
+Set up Prisma ORM with the `init` command of the Prisma CLI:
+
+```shell
+npx prisma init --datasource-provider sqlite
+```
+### How to edit a migration file
+
+1. Make a schema change that requires custom SQL (for example, to preserve existing data)
+
+2. Create a draft migration using:
+
+    ```shell
+    npx prisma migrate dev --create-only
+    ```
+
+3. Modify the generated SQL file.
+
+4. Apply the modified SQL by running:
+
+    ```shell
+    npx prisma migrate dev
+    ```
