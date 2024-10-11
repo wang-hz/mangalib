@@ -1,12 +1,12 @@
 import { MANGAS_DIR } from "@/config";
 import { PrismaClient } from '@prisma/client'
-import fs from 'fs/promises';
+import fs from 'fs-extra';
 import * as Path from 'path';
 import { v4 } from 'uuid';
 
 const prisma = new PrismaClient();
 
-const getMangaPaths = async (mangaDir: string) => {
+const getMangaPaths = (mangaDir: string) => {
   const mangaPaths: string[] = [];
   const stack = [mangaDir];
   while (stack.length > 0) {
@@ -14,16 +14,15 @@ const getMangaPaths = async (mangaDir: string) => {
     if (!cwd) {
       break;
     }
-    const filenames = await fs.readdir(cwd);
-    for (const filename of filenames) {
+    fs.readdirSync(cwd).forEach((filename) => {
       const fullPath = Path.join(cwd, filename);
-      const stats = await fs.stat(fullPath);
+      const stats = fs.statSync(fullPath);
       if (stats.isDirectory()) {
         stack.push(fullPath);
       } else if (Path.extname(filename) === '.zip') {
         mangaPaths.push(fullPath);
       }
-    }
+    });
   }
   return mangaPaths;
 };
@@ -41,9 +40,7 @@ const createMangaIfNotExists = async (path: string) => {
 };
 
 export const updateMangas = () => {
-  getMangaPaths(MANGAS_DIR)
-    .then((mangaPaths) => mangaPaths
-      .forEach(async (mangaPath) => await createMangaIfNotExists(mangaPath)));
+  getMangaPaths(MANGAS_DIR).forEach(async (mangaPath) => await createMangaIfNotExists(mangaPath));
 };
 
 export const findMangasByPage = async (skip: number, take: number) => {
