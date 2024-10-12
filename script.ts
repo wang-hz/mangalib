@@ -147,3 +147,18 @@ export const createImages = async (mangaUuid: string) => {
 export const deleteImages = async (mangaUuid: string) => {
   return prisma.image.deleteMany({ where: { mangaUuid } });
 };
+
+export const findImages = async (mangaUuid: string) => {
+  return prisma.image.findMany({
+    select: { filename: true },
+    where: { mangaUuid },
+    orderBy: { entryName: 'asc' }
+  });
+};
+
+export const findImage = async (filename: string) => {
+  return prisma.image.findUnique({
+    select: { mangaUuid: true, entryName: true },
+    where: { filename }
+  });
+};
