@@ -11,15 +11,26 @@ datasource db {
 }
 
 model manga {
-  pid           Int     @id @default(autoincrement())
-  uuid          String  @unique
-  path          String  @unique
-  title         String?
-  originalTitle String?
-  fullTitle     String?
-  artist        String?
-  group         String?
-  event         String?
-  parody        String?
-  tags          String?
+  pid              Int     @id @default(autoincrement())
+  uuid             String  @unique
+  path             String  @unique
+  title            String?
+  originalTitle    String?
+  fullTitle        String?
+  artist           String?
+  group            String?
+  event            String?
+  parody           String?
+  tags             String?
+  fileModifiedTime BigInt?
+}
+
+model image {
+  pid       Int    @id @default(autoincrement())
+  uuid      String @unique
+  mangaUuid String
+  entryName String
+  filename  String @unique
+
+  @@index([mangaUuid])
 }

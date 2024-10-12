@@ -1,10 +1,13 @@
 import { MANGAS_DIR } from "@/config";
 import { PrismaClient } from '@prisma/client'
+import AdmZip from 'adm-zip';
 import fs from 'fs-extra';
 import * as Path from 'path';
 import { v4 } from 'uuid';
 
 const prisma = new PrismaClient();
+
+const imageExtnames = ['.gif', '.jpg', 'jpeg', '.png', 'bmp'];
 
 const parseArtistAndGroup = (artist: string | undefined) => {
   if (!artist) {
@@ -76,16 +79,21 @@ const getMangaPaths = (mangaDir: string) => {
   return mangaPaths;
 };
 
-const createMangaIfNotExists = async (path: string) => {
+const createOrUpdateManga = async (path: string) => {
   return prisma.manga
     .findUnique({ where: { path } })
     .then(async (manga) => {
       if (!!manga) {
-        return;
+        if (Number(manga.fileModifiedTime) === fs.statSync(manga.path).mtime.getTime()) {
+          return;
+        }
+        await deleteImages(manga.uuid);
+        await createImages(manga.uuid);
       }
       const uuid = v4();
       const info = parseMangaInfo(path);
-      await prisma.manga.create({ data: { uuid, path, ...info } });
+      await prisma.manga.create({ data: { uuid, path, fileModifiedTime: fs.statSync(path).mtime.getTime(), ...info } });
+      await createImages(uuid);
     });
 };
 
@@ -101,7 +109,7 @@ export const updateMangas = () => {
         data: parseMangaInfo(manga.path)
       });
     }));
-  getMangaPaths(MANGAS_DIR).forEach(async (mangaPath) => await createMangaIfNotExists(mangaPath));
+  getMangaPaths(MANGAS_DIR).forEach(async (mangaPath) => await createOrUpdateManga(mangaPath));
 };
 
 export const findMangasByPage = async (skip: number, take: number) => {
@@ -114,4 +122,28 @@ export const findMangasByPage = async (skip: number, take: number) => {
 
 export const findManga = async (uuid: string) => {
   return prisma.manga.findUnique({ where: { uuid } });
+};
+
+export const createImages = async (mangaUuid: string) => {
+  return findManga(mangaUuid)
+    .then((manga) => {
+      if (!manga) {
+        throw new Error(`manga not found. mangaUuid=${mangaUuid}`);
+      }
+      const admZip = new AdmZip(manga.path);
+      const data = admZip.getEntries()
+        .filter((entry) => !entry.isDirectory && imageExtnames.includes(Path.extname(entry.name)))
+        .map((entry) => {
+          const uuid = v4();
+          const entryName = entry.entryName;
+          const extname = Path.extname(entryName);
+          const filename = `${uuid}${extname}`
+          return { uuid, mangaUuid, entryName, filename };
+        });
+      return prisma.image.createMany({ data });
+    });
+};
+
+export const deleteImages = async (mangaUuid: string) => {
+  return prisma.image.deleteMany({ where: { mangaUuid } });
 };
