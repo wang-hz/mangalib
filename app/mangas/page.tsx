@@ -49,11 +49,11 @@ export default function Home() {
   return (
     <Box>
       <List>
-        {mangas.map((manga, index) => (
-          <ListItemButton key={index}>
+        {mangas.map((manga, index) =>
+          <ListItemButton key={index} href={`/mangas/${manga.uuid}`}>
             <ListItemText primary={manga.title}/>
           </ListItemButton>
-        ))}
+        )}
       </List>
       <Pagination
         count={pageCount}
