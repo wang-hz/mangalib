@@ -111,3 +111,7 @@ export const findMangasByPage = async (skip: number, take: number) => {
     prisma.manga.findMany(query)
   ]);
 };
+
+export const findManga = async (uuid: string) => {
+  return prisma.manga.findUnique({ where: { uuid } });
+};
