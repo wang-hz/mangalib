@@ -51,7 +51,7 @@ export default function Home() {
       <List>
         {mangas.map((manga, index) =>
           <ListItemButton key={index} href={`/mangas/${manga.uuid}`}>
-            <ListItemText primary={manga.title}/>
+            <ListItemText primary={manga.fullTitle}/>
           </ListItemButton>
         )}
       </List>

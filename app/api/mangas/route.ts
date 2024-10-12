@@ -22,12 +22,7 @@ export const GET = async (request: NextRequest) => {
   }
   return findMangasByPage((pageIndex - 1) * pageSize, pageSize)
     .then(([total, mangas]) => Response.json(
-      {
-        total,
-        items: mangas.map((manga) => {
-          return { uuid: manga.uuid, title: manga.title };
-        })
-      },
+      { total, items: mangas },
       { status: 200 }
     ));
 };

@@ -113,10 +113,9 @@ export const updateMangas = () => {
 };
 
 export const findMangasByPage = async (skip: number, take: number) => {
-  const query = { skip, take, where: undefined };
   return prisma.$transaction([
-    prisma.manga.count({ where: query.where }),
-    prisma.manga.findMany(query)
+    prisma.manga.count(),
+    prisma.manga.findMany({ skip, take, select: { uuid: true, fullTitle: true } })
   ]);
 };
 
