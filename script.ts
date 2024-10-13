@@ -88,12 +88,32 @@ const createOrUpdateManga = async (path: string) => {
           return;
         }
         await deleteImages(manga.uuid);
-        await createImages(manga.uuid);
+      } else {
+        const uuid = v4();
+        const info = parseMangaInfo(path);
+        manga = await prisma.manga.create({
+          data: {
+            uuid, path,
+            fileModifiedTime: fs.statSync(path).mtime.getTime(), ...info
+          }
+        });
       }
-      const uuid = v4();
-      const info = parseMangaInfo(path);
-      await prisma.manga.create({ data: { uuid, path, fileModifiedTime: fs.statSync(path).mtime.getTime(), ...info } });
-      await createImages(uuid);
+      if (!!manga) {
+        const images = await createImages(manga?.uuid);
+        images.sort((a, b) => {
+          if (a.entryName > b.entryName) {
+            return 1;
+          } else if (a.entryName < b.entryName) {
+            return -1;
+          } else {
+            return 0;
+          }
+        })
+        await prisma.manga.update({
+          where: { uuid: manga.uuid },
+          data: { coverFilename: images[0].filename }
+        });
+      }
     });
 };
 
@@ -115,7 +135,10 @@ export const updateMangas = () => {
 export const findMangasByPage = async (skip: number, take: number) => {
   return prisma.$transaction([
     prisma.manga.count(),
-    prisma.manga.findMany({ skip, take, select: { uuid: true, fullTitle: true } })
+    prisma.manga.findMany({
+      skip, take,
+      select: { uuid: true, fullTitle: true, coverFilename: true }
+    })
   ]);
 };
 
@@ -139,7 +162,7 @@ export const createImages = async (mangaUuid: string) => {
           const filename = `${uuid}${extname}`
           return { uuid, mangaUuid, entryName, filename };
         });
-      return prisma.image.createMany({ data });
+      return prisma.image.createManyAndReturn({ data });
     });
 };
 

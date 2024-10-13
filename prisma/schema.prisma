@@ -14,6 +14,7 @@ model manga {
   pid              Int     @id @default(autoincrement())
   uuid             String  @unique
   path             String  @unique
+  coverFilename    String?
   title            String?
   originalTitle    String?
   fullTitle        String?
