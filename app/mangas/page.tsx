@@ -1,6 +1,6 @@
 "use client"
 
-import { Box, List, ListItemButton, ListItemText, Pagination } from "@mui/material";
+import { Card, CardActionArea, CardHeader, CardMedia, Container, Grid2, Pagination } from "@mui/material";
 import { manga } from "@prisma/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -26,12 +26,13 @@ export default function Home() {
 
   const searchParams = useSearchParams();
   const pageIndex = parseInt(searchParams.get('pageIndex') ?? '') || 1;
-  const pageSize = parseInt(searchParams.get('pageSize') ?? '') || 10;
+  const pageSize = parseInt(searchParams.get('pageSize') ?? '') || 12;
 
   const [mangas, setMangas] = useState<manga[]>([]);
   const [pageCount, setPageCount] = useState(0);
 
   useEffect(() => {
+    setMangas([]);
     getMangasByPage(pageIndex, pageSize)
       .then((data) => {
         setMangas(data.items);
@@ -47,19 +48,31 @@ export default function Home() {
   };
 
   return (
-    <Box>
-      <List>
+    <Container sx={{ paddingTop: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Grid2 container spacing={2}>
         {mangas.map((manga, index) =>
-          <ListItemButton key={index} href={`/mangas/${manga.uuid}`}>
-            <ListItemText primary={manga.fullTitle}/>
-          </ListItemButton>
+          <Grid2 key={index} size={2}>
+            <Card>
+              <CardActionArea href={`/mangas/${manga.uuid}`}>
+                <CardHeader
+                  title={manga.fullTitle}
+                  titleTypographyProps={{ fontSize: 14 }}
+                />
+                <CardMedia
+                  component='img'
+                  image={`/api/images/${manga.coverFilename}`}
+                  alt={manga.title ?? ''}
+                />
+              </CardActionArea>
+            </Card>
+          </Grid2>
         )}
-      </List>
+      </Grid2>
       <Pagination
         count={pageCount}
         page={pageIndex}
         onChange={handlePaginationChange}
       />
-    </Box>
+    </Container>
   );
 }
