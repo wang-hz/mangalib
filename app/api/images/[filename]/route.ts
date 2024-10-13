@@ -1,5 +1,5 @@
 import { CACHE_DIR } from "@/config";
-import { findImage, findManga } from "@/script";
+import { findImage } from "@/script";
 import AdmZip from "adm-zip";
 import { fileTypeFromBuffer } from "file-type";
 import fs from "fs-extra";
@@ -37,11 +37,7 @@ const readImage = async (filename: string) => {
   if (!image) {
     return null;
   }
-  const manga = await findManga(image.mangaUuid);
-  if (!manga) {
-    return null;
-  }
-  const data = new AdmZip(manga.path).getEntry(image.entryName)?.getData();
+  const data = new AdmZip(image.mangaPath).getEntry(image.entryName)?.getData();
   if (!data) {
     return null;
   }

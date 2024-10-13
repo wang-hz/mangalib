@@ -1,4 +1,4 @@
-import { MANGAS_DIR } from "@/config";
+import { CACHE_DIR, MANGAS_DIR } from "@/config";
 import { PrismaClient } from '@prisma/client'
 import AdmZip from 'adm-zip';
 import fs from 'fs-extra';
@@ -159,14 +159,17 @@ export const createImages = async (mangaUuid: string) => {
           const uuid = v4();
           const entryName = entry.entryName;
           const extname = Path.extname(entryName);
-          const filename = `${uuid}${extname}`
-          return { uuid, mangaUuid, entryName, filename };
+          const filename = `${uuid}${extname}`;
+          const mangaPath = manga.path;
+          return { uuid, mangaUuid, entryName, filename, mangaPath };
         });
       return prisma.image.createManyAndReturn({ data });
     });
 };
 
 export const deleteImages = async (mangaUuid: string) => {
+  const images = await prisma.image.findMany({where: {mangaUuid}});
+  images.map((image) => image.filename).forEach((filename) => fs.unlinkSync(Path.join(CACHE_DIR, filename)));
   return prisma.image.deleteMany({ where: { mangaUuid } });
 };
 
@@ -180,7 +183,7 @@ export const findImages = async (mangaUuid: string) => {
 
 export const findImage = async (filename: string) => {
   return prisma.image.findUnique({
-    select: { mangaUuid: true, entryName: true },
+    select: { mangaUuid: true, mangaPath: true, entryName: true },
     where: { filename }
   });
 };
