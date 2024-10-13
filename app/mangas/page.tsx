@@ -1,25 +1,10 @@
 "use client"
 
+import { getMangasByPage } from "@/app/requests";
 import { Card, CardActionArea, CardHeader, CardMedia, Container, Grid2, Pagination } from "@mui/material";
 import { manga } from "@prisma/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-
-const getMangasByPage = async (pageIndex: number, pageSize: number) => {
-  return fetch('/api/mangas?' + new URLSearchParams({
-    pageIndex: pageIndex.toString(),
-    pageSize: pageSize.toString()
-  }).toString())
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('failed to fetch mangas');
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-};
 
 export default function Home() {
   const router = useRouter();

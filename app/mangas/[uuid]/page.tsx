@@ -1,53 +1,16 @@
 "use client"
 
-import { Button, ButtonGroup, Container, Paper, Stack, Typography } from "@mui/material";
+import { getManga } from "@/app/requests";
+import { Button, ButtonGroup, Container, Link, Paper, Stack, Typography } from "@mui/material";
+import { manga } from "@prisma/client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-interface MangaModel {
-  title: string,
-  originalTitle: string,
-  fullTitle: string,
-  artist: string,
-  group: string,
-  event: string,
-  parody: string,
-  tags: string[]
-}
-
-const getManga = async (uuid: string) => {
-  return fetch(`/api/mangas/${uuid}`)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('failed to fetch manga');
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-};
-
-const getImages = async (mangaUuid: string) => {
-  return fetch(`/api/mangas/${mangaUuid}/images`)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('failed to fetch images of manga');
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      console.error(error);
-    })
-};
-
 export default function Home({ params }: { params: { uuid: string } }) {
-  const [manga, setManga] = useState<MangaModel | undefined>(undefined);
-  const [cover, setCover] = useState<string | undefined>(undefined);
+  const [manga, setManga] = useState<manga | undefined>(undefined);
 
   useEffect(() => {
     getManga(params.uuid).then((data) => setManga(data));
-    getImages(params.uuid).then((data) => setCover(data.images[0]));
   }, [params.uuid]);
 
   return (
@@ -62,9 +25,12 @@ export default function Home({ params }: { params: { uuid: string } }) {
         <Typography variant='subtitle2'>{manga?.fullTitle}</Typography>
       </Stack>
       <Stack direction='row' gap={4}>
-        <Paper sx={{ position: 'relative', width: 300, height: 400 }}>
-          {cover && <Image src={cover} alt='cover' fill objectFit='contain'/>}
-        </Paper>
+        <Link href={`/mangas/${params.uuid}/images`}>
+          <Paper sx={{ position: 'relative', width: 300, height: 400 }}>
+            {manga?.coverFilename &&
+              <Image src={`/api/images/${manga.coverFilename}`} alt='cover' fill objectFit='contain'/>}
+          </Paper>
+        </Link>
         <Stack gap={1}>
           <Stack direction='row' gap={1}>
             {manga?.artist &&
@@ -95,7 +61,7 @@ export default function Home({ params }: { params: { uuid: string } }) {
             }
           </Stack>
           <Stack direction='row' gap={1}>
-            {manga?.tags.map((tag, index) =>
+            {JSON.parse(manga?.tags ?? '[]').map((tag: string, index: number) =>
               <Button key={index} variant='outlined' style={{ textTransform: 'none' }}>{tag}</Button>
             )}
           </Stack>
