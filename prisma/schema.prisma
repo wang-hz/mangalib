@@ -10,7 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model manga {
+model Manga {
   pid              Int     @id @default(autoincrement())
   uuid             String  @unique
   path             String  @unique
@@ -26,7 +26,7 @@ model manga {
   fileModifiedTime BigInt?
 }
 
-model image {
+model Image {
   pid       Int    @id @default(autoincrement())
   uuid      String @unique
   mangaUuid String
@@ -37,7 +37,7 @@ model image {
   @@index([mangaUuid])
 }
 
-model updateRecord {
+model UpdateRecord {
   pid      Int    @id @default(autoincrement())
   uuid     String @unique
   progress Int
