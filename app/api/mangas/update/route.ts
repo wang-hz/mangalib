@@ -1,7 +1,22 @@
-import { updateMangas } from "@/script";
+import { UpdateRecordStatus } from "@/app/models";
+import { findLastUpdateRecord, updateMangas } from "@/script";
 
+export const GET = async () => {
+  const updateRecord = await findLastUpdateRecord();
+  return Response.json(
+    { status: updateRecord },
+    { status: 200 }
+  );
+};
 
-export const POST = () => {
+export const POST = async () => {
+  const updateRecord = await findLastUpdateRecord();
+  if (updateRecord != null && updateRecord.status !== UpdateRecordStatus.ALL_UPDATED.toString()) {
+    return Response.json(
+      { message: 'update task of mangas is already running' },
+      { status: 409 }
+    );
+  }
   try {
     updateMangas();
   } catch (error) {
@@ -11,7 +26,7 @@ export const POST = () => {
     )
   }
   return Response.json(
-    { message: 'mangas are updating' },
-    { status: 201 }
+    { message: 'update task of mangas started' },
+    { status: 202 }
   );
 };

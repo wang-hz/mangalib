@@ -1,8 +1,8 @@
 "use client"
 
-import { getImages } from "@/app/requests";
+import { useImages } from "@/app/hooks";
 import { Box, Container, Slider } from "@mui/material";
-import Image from "next/image"
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -10,14 +10,13 @@ export default function Home({ params }: { params: { uuid: string } }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const imageIndex = parseInt(searchParams.get('imageIndex') ?? '') || 1;
-  const [images, setImages] = useState<string[]>([]);
+  const { images } = useImages(params.uuid);
   const [currentImage, setCurrentImage] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    getImages(params.uuid).then((data) => setImages(data.images));
-  }, [params.uuid]);
-
-  useEffect(() => {
+    if (!images) {
+      return;
+    }
     setCurrentImage(images[imageIndex - 1]);
   }, [imageIndex, images]);
 
@@ -40,7 +39,7 @@ export default function Home({ params }: { params: { uuid: string } }) {
           defaultValue={imageIndex}
           step={1}
           min={1}
-          max={images.length}
+          max={images?.length}
           valueLabelDisplay={'auto'}
           onChange={handleSliderChange}
         />

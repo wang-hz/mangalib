@@ -1,3 +1,4 @@
+import { UpdateRecordStatus } from "@/app/models";
 import { CACHE_DIR, MANGAS_DIR } from "@/config";
 import { PrismaClient } from '@prisma/client'
 import AdmZip from 'adm-zip';
@@ -68,11 +69,15 @@ const getMangaPaths = (mangaDir: string) => {
     }
     fs.readdirSync(cwd).forEach((filename) => {
       const fullPath = Path.join(cwd, filename);
-      const stats = fs.statSync(fullPath);
-      if (stats.isDirectory()) {
-        stack.push(fullPath);
-      } else if (Path.extname(filename) === '.zip') {
-        mangaPaths.push(fullPath);
+      try {
+        const stats = fs.statSync(fullPath);
+        if (stats.isDirectory()) {
+          stack.push(fullPath);
+        } else if (Path.extname(filename) === '.zip') {
+          mangaPaths.push(fullPath);
+        }
+      } catch (error) {
+        console.error(error);
       }
     });
   }
@@ -83,53 +88,111 @@ const createOrUpdateManga = async (path: string) => {
   return prisma.manga
     .findUnique({ where: { path } })
     .then(async (manga) => {
-      if (!!manga) {
-        if (Number(manga.fileModifiedTime) === fs.statSync(manga.path).mtime.getTime()) {
-          return;
-        }
-        await deleteImages(manga.uuid);
-      } else {
+      if (!manga) {
         const uuid = v4();
+        const fileModifiedTime = fs.statSync(path).mtime.getTime();
         const info = parseMangaInfo(path);
-        manga = await prisma.manga.create({
-          data: {
-            uuid, path,
-            fileModifiedTime: fs.statSync(path).mtime.getTime(), ...info
-          }
+        const manga = await prisma.manga.create({
+          data: { uuid, path, fileModifiedTime, ...info }
         });
+        await createImages(manga.uuid);
+        return manga;
       }
-      if (!!manga) {
-        const images = await createImages(manga?.uuid);
-        images.sort((a, b) => {
-          if (a.entryName > b.entryName) {
-            return 1;
-          } else if (a.entryName < b.entryName) {
-            return -1;
-          } else {
-            return 0;
-          }
-        })
-        await prisma.manga.update({
-          where: { uuid: manga.uuid },
-          data: { coverFilename: images[0].filename }
-        });
+      if (Number(manga.fileModifiedTime) === fs.statSync(manga.path).mtime.getTime()) {
+        return manga;
       }
+      await deleteImages(manga.uuid);
+      const images = await createImages(manga.uuid);
+      if (images.length === 0) {
+        throw new Error(`cannot create the images of the manga. mangaUuid=${manga.uuid}`);
+      }
+      images.sort((a, b) => {
+        if (a.entryName > b.entryName) {
+          return 1;
+        } else if (a.entryName < b.entryName) {
+          return -1;
+        } else {
+          return 0;
+        }
+      })
+      return prisma.manga.update({
+        where: { uuid: manga.uuid },
+        data: { coverFilename: images[0].filename }
+      });
     });
 };
 
-export const updateMangas = () => {
-  prisma.manga.findMany()
-    .then((mangas) => mangas.forEach(async (manga) => {
-      if (!fs.existsSync(manga.path)) {
-        await prisma.manga.delete({ where: { uuid: manga.uuid } });
-        return;
-      }
-      await prisma.manga.update({
-        where: { uuid: manga.uuid },
-        data: parseMangaInfo(manga.path)
-      });
-    }));
-  getMangaPaths(MANGAS_DIR).forEach(async (mangaPath) => await createOrUpdateManga(mangaPath));
+export const findLastUpdateRecord = async () =>
+  prisma.updateRecord.findFirst({
+    orderBy: { pid: 'desc' },
+  });
+
+const createUpdateRecord = async () =>
+  prisma.updateRecord.create({
+    data: {
+      uuid: v4(),
+      progress: 0,
+      total: 0,
+      status: UpdateRecordStatus.UPDATING
+    }
+  });
+
+const updateUpdateRecord = async ({ uuid, progress, total, status }: {
+  uuid: string,
+  progress?: number,
+  total?: number,
+  status?: string
+}) =>
+  prisma.updateRecord.update({
+    where: { uuid },
+    data: { progress, total, status },
+  });
+
+export const updateMangas = async () => {
+  let updateRecord = await createUpdateRecord();
+  const mangas = await prisma.manga.findMany();
+  updateRecord = await updateUpdateRecord({
+    uuid: updateRecord.uuid,
+    total: mangas.length,
+    status: UpdateRecordStatus.UPDATING
+  });
+  for (const manga of mangas) {
+    if (!fs.existsSync(manga.path)) {
+      await prisma.manga.delete({ where: { uuid: manga.uuid } });
+    }
+    updateRecord = await updateUpdateRecord({
+      uuid: updateRecord.uuid,
+      progress: updateRecord.progress + 1,
+    });
+  }
+  updateRecord = await updateUpdateRecord({
+    uuid: updateRecord.uuid,
+    progress: 0,
+    total: 0,
+    status: UpdateRecordStatus.CREATING
+  });
+  const mangaPaths = getMangaPaths(MANGAS_DIR);
+  updateRecord = await updateUpdateRecord({
+    uuid: updateRecord.uuid,
+    total: mangaPaths.length
+  });
+  for (const mangaPath of mangaPaths) {
+    try {
+      await createOrUpdateManga(mangaPath);
+    } catch (error) {
+      console.error(error);
+    }
+    updateRecord = await updateUpdateRecord({
+      uuid: updateRecord.uuid,
+      progress: updateRecord.progress + 1
+    });
+  }
+  await updateUpdateRecord({
+    uuid: updateRecord.uuid,
+    progress: 0,
+    total: 0,
+    status: UpdateRecordStatus.ALL_UPDATED
+  });
 };
 
 export const findMangasByPage = async (skip: number, take: number) => {
@@ -147,28 +210,31 @@ export const findManga = async (uuid: string) => {
 };
 
 export const createImages = async (mangaUuid: string) => {
-  return findManga(mangaUuid)
-    .then((manga) => {
-      if (!manga) {
-        throw new Error(`manga not found. mangaUuid=${mangaUuid}`);
-      }
-      const admZip = new AdmZip(manga.path);
-      const data = admZip.getEntries()
-        .filter((entry) => !entry.isDirectory && imageExtnames.includes(Path.extname(entry.name)))
-        .map((entry) => {
-          const uuid = v4();
-          const entryName = entry.entryName;
-          const extname = Path.extname(entryName);
-          const filename = `${uuid}${extname}`;
-          const mangaPath = manga.path;
-          return { uuid, mangaUuid, entryName, filename, mangaPath };
-        });
-      return prisma.image.createManyAndReturn({ data });
+  const manga = await findManga(mangaUuid);
+  if (!manga) {
+    throw new Error(`manga not found. mangaUuid=${mangaUuid}`);
+  }
+  const admZip = new AdmZip(manga.path);
+  const data = admZip.getEntries()
+    .filter((entry) => !entry.isDirectory && imageExtnames.includes(Path.extname(entry.name)))
+    .map((entry) => {
+      const uuid = v4();
+      const entryName = entry.entryName;
+      const extname = Path.extname(entryName);
+      const filename = `${uuid}${extname}`;
+      const mangaPath = manga.path;
+      return { uuid, mangaUuid, entryName, filename, mangaPath };
     });
+  const images = await prisma.image.createManyAndReturn({ data });
+  await prisma.manga.update({
+    where: { uuid: mangaUuid },
+    data: { coverFilename: images[0].filename },
+  });
+  return images;
 };
 
 export const deleteImages = async (mangaUuid: string) => {
-  const images = await prisma.image.findMany({where: {mangaUuid}});
+  const images = await prisma.image.findMany({ where: { mangaUuid } });
   images.map((image) => image.filename).forEach((filename) => fs.unlinkSync(Path.join(CACHE_DIR, filename)));
   return prisma.image.deleteMany({ where: { mangaUuid } });
 };

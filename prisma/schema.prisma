@@ -36,3 +36,11 @@ model image {
 
   @@index([mangaUuid])
 }
+
+model updateRecord {
+  pid      Int    @id @default(autoincrement())
+  uuid     String @unique
+  progress Int
+  total    Int
+  status   String
+}

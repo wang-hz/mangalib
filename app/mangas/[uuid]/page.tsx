@@ -1,17 +1,11 @@
 "use client"
 
-import { getManga } from "@/app/requests";
+import { useManga } from "@/app/hooks";
 import { Button, ButtonGroup, Container, Link, Paper, Stack, Typography } from "@mui/material";
-import { manga } from "@prisma/client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 
 export default function Home({ params }: { params: { uuid: string } }) {
-  const [manga, setManga] = useState<manga | undefined>(undefined);
-
-  useEffect(() => {
-    getManga(params.uuid).then((data) => setManga(data));
-  }, [params.uuid]);
+  const { manga } = useManga(params.uuid);
 
   return (
     <Container sx={{ paddingTop: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
