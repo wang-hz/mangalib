@@ -4,6 +4,7 @@ import { useMangasUpdateStatus, usePagedMangas } from "@/app/hooks";
 import { UpdateRecordStatus } from "@/app/models";
 import { updateMangas } from "@/app/requests";
 import {
+  Box,
   Button,
   Card,
   CardActionArea,
@@ -14,7 +15,7 @@ import {
   LinearProgress,
   Pagination
 } from "@mui/material";
-import { manga } from "@prisma/client";
+import { Manga } from "@prisma/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -22,7 +23,7 @@ export default function Home() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageIndex = parseInt(searchParams.get('pageIndex') ?? '') || 1;
-  const pageSize = parseInt(searchParams.get('pageSize') ?? '') || 12;
+  const pageSize = parseInt(searchParams.get('pageSize') ?? '') || 18;
   const { total, mangas } = usePagedMangas(pageIndex, pageSize);
   const { mangasUpdateStatus } = useMangasUpdateStatus();
   const [pageCount, setPageCount] = useState(0);
@@ -68,7 +69,7 @@ export default function Home() {
   };
 
   return (
-    <>
+    <Box>
       {updating && <LinearProgress variant='determinate' value={progress}/>}
       <Container sx={{ paddingTop: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Button
@@ -79,7 +80,7 @@ export default function Home() {
           {buttonText}
         </Button>
         <Grid2 container spacing={2}>
-          {mangas?.map((manga: manga, index: number) =>
+          {mangas?.map((manga: Manga, index: number) =>
             <Grid2 key={index} size={2}>
               <Card>
                 <CardActionArea href={`/mangas/${manga.uuid}`}>
@@ -105,6 +106,6 @@ export default function Home() {
           />
         }
       </Container>
-    </>
+    </Box>
   );
 }

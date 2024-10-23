@@ -23,7 +23,9 @@ export default function RootLayout({
         </Link>
       </Toolbar>
     </AppBar>
-    {children}
+    <div style={{ overflow: 'auto' }}>
+      {children}
+    </div>
     </body>
     </html>
   );
