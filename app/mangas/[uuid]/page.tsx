@@ -4,7 +4,7 @@ import { useManga } from "@/app/hooks";
 import { Button, ButtonGroup, Container, Link, Paper, Stack, Typography } from "@mui/material";
 import Image from "next/image";
 
-export default function Home({ params }: { params: { uuid: string } }) {
+export default function Manga({ params }: { params: { uuid: string } }) {
   const { manga } = useManga(params.uuid);
 
   return (

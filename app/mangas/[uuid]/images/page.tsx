@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-export default function Home({ params }: { params: { uuid: string } }) {
+export default function Images({ params }: { params: { uuid: string } }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const imageIndex = parseInt(searchParams.get('imageIndex') ?? '') || 1;
