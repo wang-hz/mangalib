@@ -14,27 +14,30 @@ model Manga {
   pid              Int     @id @default(autoincrement())
   uuid             String  @unique
   path             String  @unique
-  coverFilename    String?
+  coverFilename    String? @map("cover_filename")
   title            String?
-  originalTitle    String?
-  fullTitle        String?
+  originalTitle    String? @map("original_title")
+  fullTitle        String? @map("full_title")
   artist           String?
   group            String?
   event            String?
   parody           String?
   tags             String?
-  fileModifiedTime BigInt?
+  fileModifiedTime BigInt? @map("file_modified_time")
+
+  @@map("manga")
 }
 
 model Image {
   pid       Int    @id @default(autoincrement())
   uuid      String @unique
-  mangaUuid String
-  entryName String
-  mangaPath String
+  mangaUuid String @map("manga_uuid")
+  entryName String @map("entry_name")
+  mangaPath String @map("manga_path")
   filename  String @unique
 
   @@index([mangaUuid])
+  @@map("image")
 }
 
 model UpdateRecord {
@@ -43,4 +46,6 @@ model UpdateRecord {
   progress Int
   total    Int
   status   String
+
+  @@map("update_record")
 }
