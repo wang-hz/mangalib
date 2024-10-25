@@ -1,5 +1,6 @@
 import SettingsIcon from '@mui/icons-material/Settings';
 import { AppBar, Link, Stack, Toolbar } from "@mui/material";
+import { grey } from "@mui/material/colors";
 import type { Metadata } from "next";
 import React from "react";
 import "./globals.css";
@@ -27,7 +28,7 @@ export default function RootLayout({
         </Link>
       </Toolbar>
     </AppBar>
-    <Stack flex={1}>
+    <Stack flex={1} sx={{ backgroundColor: grey[100]} }>
       <Toolbar/>
       <Stack flex={1}>
         {children}

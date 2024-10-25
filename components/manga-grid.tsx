@@ -10,7 +10,7 @@ export default function MangaGrid() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageIndex = parseInt(searchParams.get('pageIndex') ?? '') || 1;
-  const pageSize = parseInt(searchParams.get('pageSize') ?? '') || 18;
+  const pageSize = parseInt(searchParams.get('pageSize') ?? '') || 12;
   const [pageCount, setPageCount] = useState(0);
   const { total, mangas } = usePagedMangas(pageIndex, pageSize);
 
@@ -27,7 +27,7 @@ export default function MangaGrid() {
   };
 
   return (
-    <Stack gap={2} marginTop={2} marginBottom={4}>
+    <Stack flex={1} gap={2} margin={4}>
       {pageCount > 0 &&
         <Stack alignItems='center' gap={1}>
           <Pagination
@@ -40,7 +40,7 @@ export default function MangaGrid() {
           </Typography>
         </Stack>
       }
-      <Grid2 container spacing={2}>
+      <Grid2 container flex={1} spacing={2}>
         {mangas?.map((manga: Manga, index: number) =>
           <Grid2 key={index} size={2}>
             <Card>
