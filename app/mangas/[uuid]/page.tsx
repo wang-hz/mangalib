@@ -29,13 +29,11 @@ export default function Manga({ params }: { params: { uuid: string } }) {
           </Paper>
         </Link>
         <Stack gap={4}>
-          <Stack gap={1}>
-            <Stack direction='row' gap={1} sx={{ alignItems: 'baseline' }}>
-              <Typography variant='h6'>{manga?.title}</Typography>
-              {manga?.title !== manga?.originalTitle &&
-                <Typography variant='subtitle1'>{manga?.originalTitle}</Typography>
-              }
-            </Stack>
+          <Stack>
+            <Typography variant='h6'>{manga?.title}</Typography>
+            {manga?.title !== manga?.originalTitle &&
+              <Typography variant='subtitle1'>{manga?.originalTitle}</Typography>
+            }
             <Typography variant='subtitle2'>{manga?.fullTitle}</Typography>
           </Stack>
           <Stack gap={1}>
