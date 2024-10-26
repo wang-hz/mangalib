@@ -117,7 +117,10 @@ const createOrUpdateManga = async (path: string) => {
       })
       return prisma.manga.update({
         where: { uuid: manga.uuid },
-        data: { coverFilename: images[0].filename }
+        data: {
+          coverFilename: images[0].filename,
+          updatedAt: new Date(Date.now())
+        }
       });
     });
 };
@@ -145,7 +148,10 @@ const updateUpdateRecord = async ({ uuid, progress, total, status }: {
 }) =>
   prisma.updateRecord.update({
     where: { uuid },
-    data: { progress, total, status },
+    data: {
+      progress, total, status,
+      updatedAt: new Date(Date.now())
+    },
   });
 
 export const updateMangas = async () => {

@@ -11,41 +11,47 @@ datasource db {
 }
 
 model Manga {
-  pid              Int     @id @default(autoincrement())
-  uuid             String  @unique
-  path             String  @unique
-  coverFilename    String? @map("cover_filename")
+  pid              Int      @id @default(autoincrement())
+  uuid             String   @unique
+  path             String   @unique
+  coverFilename    String?  @map("cover_filename")
   title            String?
-  originalTitle    String? @map("original_title")
-  fullTitle        String? @map("full_title")
+  originalTitle    String?  @map("original_title")
+  fullTitle        String?  @map("full_title")
   artist           String?
   group            String?
   event            String?
   parody           String?
   tags             String?
-  fileModifiedTime BigInt? @map("file_modified_time")
+  fileModifiedTime BigInt?  @map("file_modified_time")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @default(now()) @map("updated_at")
 
   @@map("manga")
 }
 
 model Image {
-  pid       Int    @id @default(autoincrement())
-  uuid      String @unique
-  mangaUuid String @map("manga_uuid")
-  entryName String @map("entry_name")
-  mangaPath String @map("manga_path")
-  filename  String @unique
+  pid       Int      @id @default(autoincrement())
+  uuid      String   @unique
+  mangaUuid String   @map("manga_uuid")
+  entryName String   @map("entry_name")
+  mangaPath String   @map("manga_path")
+  filename  String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
 
   @@index([mangaUuid])
   @@map("image")
 }
 
 model UpdateRecord {
-  pid      Int    @id @default(autoincrement())
-  uuid     String @unique
-  progress Int
-  total    Int
-  status   String
+  pid       Int      @id @default(autoincrement())
+  uuid      String   @unique
+  progress  Int
+  total     Int
+  status    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
 
   @@map("update_record")
 }
