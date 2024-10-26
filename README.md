@@ -40,7 +40,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 Set up Prisma ORM with the `init` command of the Prisma CLI:
 
 ```shell
-npx prisma init --datasource-provider sqlite
+prisma init --datasource-provider sqlite
 ```
 ### How to edit a migration file
 
@@ -49,7 +49,7 @@ npx prisma init --datasource-provider sqlite
 2. Create a draft migration using:
 
     ```shell
-    npx prisma migrate dev --create-only
+    prisma migrate dev --create-only
     ```
 
 3. Modify the generated SQL file.
@@ -59,3 +59,9 @@ npx prisma init --datasource-provider sqlite
     ```shell
     npx prisma migrate dev
     ```
+
+5. Regenerate Prisma Client
+
+   ```shell
+   prisma generate
+   ```
