@@ -1,15 +1,26 @@
 "use client"
 
 import { useManga } from "@/app/hooks";
-import { Box, Chip, Container, Link, Paper, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Chip,
+  Container,
+  Link,
+  Paper,
+  Stack,
+  Table, TableBody, TableCell,
+  TableContainer,
+  TableRow,
+  Typography
+} from "@mui/material";
 import Image from "next/image";
 
 export default function Manga({ params }: { params: { uuid: string } }) {
   const { manga } = useManga(params.uuid);
 
   return (
-    <Container sx={{ paddingTop: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Stack direction='row' gap={4} margin={4}>
+    <Container sx={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
+      <Stack direction='row' gap={4}>
         <Link href={`/mangas/${params.uuid}/images`}>
           <Paper sx={{ position: 'relative', width: 300, height: 400 }}>
             {manga?.coverFilename &&
@@ -49,13 +60,44 @@ export default function Manga({ params }: { params: { uuid: string } }) {
               </Box>
             }
             <Stack direction='row' gap={1}>
-              {JSON.parse(manga?.tags ?? '[]').map((tag: string, index: number) =>
-                <Chip key={index} label={tag} variant='outlined'/>
-              )}
+              {manga?.tags &&
+                manga.tags.map((tag: string, index: number) =>
+                  <Chip key={index} label={tag} variant='outlined'/>
+                )}
             </Stack>
           </Stack>
         </Stack>
       </Stack>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableBody>
+            {manga?.path &&
+              <TableRow>
+                <TableCell align='right' width={300}>path</TableCell>
+                <TableCell>{manga.path}</TableCell>
+              </TableRow>
+            }
+            {manga?.fileModifiedTime &&
+              <TableRow>
+                <TableCell align='right' width={300}>file modified time</TableCell>
+                <TableCell>{new Date(manga.fileModifiedTime).toLocaleString()}</TableCell>
+              </TableRow>
+            }
+            {manga?.createdAt &&
+              <TableRow>
+                <TableCell align='right' width={300}>created at</TableCell>
+                <TableCell>{new Date(manga.createdAt).toLocaleString()}</TableCell>
+              </TableRow>
+            }
+            {manga?.updatedAt &&
+              <TableRow>
+                <TableCell align='right' width={300}>updated at</TableCell>
+                <TableCell>{new Date(manga.updatedAt).toLocaleString()}</TableCell>
+              </TableRow>
+            }
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Container>
   );
 }

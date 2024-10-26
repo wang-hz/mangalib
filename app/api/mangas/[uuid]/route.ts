@@ -14,6 +14,7 @@ export const GET = async (
       }
       return Response.json(
         {
+          path: manga.path,
           coverFilename: manga.coverFilename,
           title: manga.title,
           originalTitle: manga.originalTitle,
@@ -22,7 +23,10 @@ export const GET = async (
           group: manga.group,
           event: manga.event,
           parody: manga.parody,
-          tags: manga.tags
+          tags: JSON.parse(manga.tags ?? '[]'),
+          fileModifiedTime: manga.fileModifiedTime,
+          createdAt: manga.createdAt,
+          updatedAt: manga.updatedAt
         },
         { status: 200 }
       );
