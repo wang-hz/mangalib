@@ -1,29 +1,26 @@
-import { findManga } from "@/script";
+import { findManga, findTags } from "@/script";
 
 export const GET = async (
   _: Request,
   { params }: { params: { uuid: string } }
 ) => {
   return findManga(params.uuid)
-    .then((manga) => {
+    .then(async (manga) => {
       if (!manga) {
         return Response.json(
           { message: 'manga not found' },
           { status: 404 }
         )
       }
+      const tags = await findTags(manga.uuid);
       return Response.json(
         {
+          tags: tags,
           path: manga.path,
           coverFilename: manga.coverFilename,
           title: manga.title,
           originalTitle: manga.originalTitle,
           fullTitle: manga.fullTitle,
-          artist: manga.artist,
-          group: manga.group,
-          event: manga.event,
-          parody: manga.parody,
-          tags: JSON.parse(manga.tags ?? '[]'),
           fileModifiedTime: manga.fileModifiedTime,
           createdAt: manga.createdAt,
           updatedAt: manga.updatedAt

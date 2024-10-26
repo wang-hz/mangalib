@@ -2,21 +2,44 @@
 
 import { useManga } from "@/app/hooks";
 import {
-  Box,
   Chip,
   Container,
   Link,
   Paper,
   Stack,
-  Table, TableBody, TableCell,
+  Table,
+  TableBody,
+  TableCell,
   TableContainer,
   TableRow,
   Typography
 } from "@mui/material";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+
+interface Tag {
+  name: string,
+  type: string | null
+}
 
 export default function Manga({ params }: { params: { uuid: string } }) {
   const { manga } = useManga(params.uuid);
+  const [artists, setArtists] = useState<string[]>([]);
+  const [groups, setGroups] = useState<string[]>([]);
+  const [events, setEvents] = useState<string[]>([]);
+  const [parodies, setParodies] = useState<string[]>([]);
+  const [customTags, setCustomTags] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!Array.isArray(manga?.tags)) {
+      return;
+    }
+    setArtists(manga.tags.filter((tag: Tag) => tag.type === 'artist').map((tag: Tag) => tag.name));
+    setGroups(manga.tags.filter((tag: Tag) => tag.type === 'group').map((tag: Tag) => tag.name));
+    setEvents(manga.tags.filter((tag: Tag) => tag.type === 'event').map((tag: Tag) => tag.name));
+    setParodies(manga.tags.filter((tag: Tag) => tag.type === 'parody').map((tag: Tag) => tag.name));
+    setCustomTags(manga.tags.filter((tag: Tag) => !tag.type).map((tag: Tag) => tag.name));
+  }, [manga]);
 
   return (
     <Container sx={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
@@ -37,32 +60,41 @@ export default function Manga({ params }: { params: { uuid: string } }) {
             <Typography variant='subtitle2'>{manga?.fullTitle}</Typography>
           </Stack>
           <Stack gap={1}>
-            {manga?.artist &&
-              <Box>
-                <Chip label={`artist: ${manga.artist}`} variant='outlined'/>
-              </Box>
-            }
-            {manga?.group &&
-              <Box>
-                <Chip label={`group: ${manga.group}`} variant='outlined'/>
-              </Box>
-            }
-            {manga?.event &&
-              <Box>
-                <Chip label={`event: ${manga.event}`} variant='outlined'/>
-              </Box>
-            }
-            {manga?.parody &&
-              <Box>
-                <Chip label={`parody: ${manga.parody}`} variant='outlined'/>
-              </Box>
-            }
-            <Stack direction='row' gap={1}>
-              {manga?.tags &&
-                manga.tags.map((tag: string, index: number) =>
-                  <Chip key={index} label={tag} variant='outlined'/>
+            {artists.length > 0 &&
+              <Stack direction='row' gap={1}>
+                {artists.map((artist: string, index: number) =>
+                  <Chip key={index} label={`artist: ${artist}`} variant='outlined'/>
                 )}
-            </Stack>
+              </Stack>
+            }
+            {groups.length > 0 &&
+              <Stack direction='row' gap={1}>
+                {groups.map((group: string, index: number) =>
+                  <Chip key={index} label={`group: ${group}`} variant='outlined'/>
+                )}
+              </Stack>
+            }
+            {events.length > 0 &&
+              <Stack direction='row' gap={1}>
+                {events.map((event: string, index: number) =>
+                  <Chip key={index} label={`event: ${event}`} variant='outlined'/>
+                )}
+              </Stack>
+            }
+            {parodies.length > 0 &&
+              <Stack direction='row' gap={1}>
+                {parodies.map((parody: string, index: number) =>
+                  <Chip key={index} label={`parody: ${parody}`} variant='outlined'/>
+                )}
+              </Stack>
+            }
+            {customTags.length > 0 &&
+              <Stack direction='row' gap={1}>
+                {customTags.map((customTag: string, index: number) =>
+                  <Chip key={index} label={customTag} variant='outlined'/>
+                )}
+              </Stack>
+            }
           </Stack>
         </Stack>
       </Stack>

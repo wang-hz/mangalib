@@ -91,10 +91,41 @@ const createOrUpdateManga = async (path: string) => {
       if (!manga) {
         const uuid = v4();
         const fileModifiedTime = new Date(fs.statSync(path).mtime.getTime());
-        const info = parseMangaInfo(path);
+        const {
+          title,
+          fullTitle,
+          originalTitle,
+          artist,
+          group,
+          parody,
+          event,
+          tags
+        } = parseMangaInfo(path);
         const manga = await prisma.manga.create({
-          data: { uuid, path, fileModifiedTime, ...info }
+          data: { uuid, path, fileModifiedTime, title, fullTitle, originalTitle }
         });
+        if (artist) {
+          createTagIfNotExist(artist, 'artist')
+            .then((tag) => createMangaTagMapping(manga.uuid, tag.uuid));
+        }
+        if (group) {
+          createTagIfNotExist(group, 'group')
+            .then((tag) => createMangaTagMapping(manga.uuid, tag.uuid));
+        }
+        if (parody) {
+          createTagIfNotExist(parody, 'parody')
+            .then((tag) => createMangaTagMapping(manga.uuid, tag.uuid));
+        }
+        if (event) {
+          createTagIfNotExist(event, 'event')
+            .then((tag) => createMangaTagMapping(manga.uuid, tag.uuid));
+        }
+        if (tags) {
+          JSON.parse(tags).forEach(
+            (name: string) => createTagIfNotExist(name, null)
+              .then((tag) => createMangaTagMapping(manga.uuid, tag.uuid))
+          );
+        }
         await createImages(manga.uuid);
         return manga;
       }
@@ -102,6 +133,7 @@ const createOrUpdateManga = async (path: string) => {
         return manga;
       }
       await deleteImages(manga.uuid);
+      await deleteMangaTagMapping(manga.uuid);
       const images = await createImages(manga.uuid);
       if (images.length === 0) {
         throw new Error(`cannot create the images of the manga. mangaUuid=${manga.uuid}`);
@@ -258,4 +290,40 @@ export const findImage = async (filename: string) => {
     select: { mangaUuid: true, mangaPath: true, entryName: true },
     where: { filename }
   });
+};
+
+const createTagIfNotExist = async (name: string, type: string | null) => {
+  return prisma.tag.findFirst({ where: { name, type } })
+    .then((tag) => {
+      if (!!tag) {
+        return tag;
+      }
+      return prisma.tag.create({
+        data: {
+          uuid: v4(),
+          name, type
+        }
+      });
+    });
+};
+
+const createMangaTagMapping = async (mangaUuid: string, tagUuid: string) => {
+  return prisma.mangaTag.create({ data: { mangaUuid, tagUuid } });
+};
+
+export const findTags = async (mangaUuid: string) => {
+  const mangaTags = await prisma.mangaTag.findMany({ where: { mangaUuid } });
+  const tags = [];
+  for (const mangaTag of mangaTags) {
+    const tag = await prisma.tag.findUnique({
+      select: { uuid: true, name: true, type: true },
+      where: { uuid: mangaTag.tagUuid }
+    });
+    tags.push(tag);
+  }
+  return tags;
+}
+
+const deleteMangaTagMapping = async (mangaUuid: string) => {
+  return prisma.mangaTag.deleteMany({ where: { mangaUuid } });
 };
