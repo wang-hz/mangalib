@@ -11,21 +11,21 @@ datasource db {
 }
 
 model Manga {
-  pid              Int      @id @default(autoincrement())
-  uuid             String   @unique
-  path             String   @unique
-  coverFilename    String?  @map("cover_filename")
+  pid              Int       @id @default(autoincrement())
+  uuid             String    @unique
+  path             String    @unique
+  coverFilename    String?   @map("cover_filename")
   title            String?
-  originalTitle    String?  @map("original_title")
-  fullTitle        String?  @map("full_title")
+  originalTitle    String?   @map("original_title")
+  fullTitle        String?   @map("full_title")
   artist           String?
   group            String?
   event            String?
   parody           String?
   tags             String?
-  fileModifiedTime BigInt?  @map("file_modified_time")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @default(now()) @map("updated_at")
+  fileModifiedTime DateTime? @map("file_modified_time")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @default(now()) @map("updated_at")
 
   @@map("manga")
 }

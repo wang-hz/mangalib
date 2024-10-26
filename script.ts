@@ -90,7 +90,7 @@ const createOrUpdateManga = async (path: string) => {
     .then(async (manga) => {
       if (!manga) {
         const uuid = v4();
-        const fileModifiedTime = fs.statSync(path).mtime.getTime();
+        const fileModifiedTime = new Date(fs.statSync(path).mtime.getTime());
         const info = parseMangaInfo(path);
         const manga = await prisma.manga.create({
           data: { uuid, path, fileModifiedTime, ...info }
@@ -98,7 +98,7 @@ const createOrUpdateManga = async (path: string) => {
         await createImages(manga.uuid);
         return manga;
       }
-      if (Number(manga.fileModifiedTime) === fs.statSync(manga.path).mtime.getTime()) {
+      if (manga.fileModifiedTime === new Date(fs.statSync(manga.path).mtime.getTime())) {
         return manga;
       }
       await deleteImages(manga.uuid);
