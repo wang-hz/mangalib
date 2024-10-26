@@ -1,16 +1,17 @@
 "use client"
 
 import { usePagedMangas } from "@/app/hooks";
-import { Card, CardActionArea, CardHeader, CardMedia, Grid2, Pagination, Stack, Typography } from "@mui/material";
+import { MangaCard } from "@/components/manga-card";
+import { Box, Pagination, Stack, Typography } from "@mui/material";
 import { Manga } from "@prisma/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-export default function MangaGrid() {
+export default function MangaList() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageIndex = parseInt(searchParams.get('pageIndex') ?? '') || 1;
-  const pageSize = parseInt(searchParams.get('pageSize') ?? '') || 12;
+  const pageSize = parseInt(searchParams.get('pageSize') ?? '') || 20;
   const [pageCount, setPageCount] = useState(0);
   const { total, mangas } = usePagedMangas(pageIndex, pageSize);
 
@@ -27,7 +28,7 @@ export default function MangaGrid() {
   };
 
   return (
-    <Stack flex={1} gap={2} margin={4}>
+    <Stack flex={1} gap={2} margin={2}>
       {pageCount > 0 &&
         <Stack alignItems='center' gap={1}>
           <Pagination
@@ -40,25 +41,11 @@ export default function MangaGrid() {
           </Typography>
         </Stack>
       }
-      <Grid2 container flex={1} spacing={2}>
+      <Box flex={1} gap={2} display='flex' flexDirection='row' flexWrap='wrap' justifyContent='center'>
         {mangas?.map((manga: Manga, index: number) =>
-          <Grid2 key={index} size={2}>
-            <Card>
-              <CardActionArea href={`/mangas/${manga.uuid}`}>
-                <CardHeader
-                  title={manga.fullTitle}
-                  titleTypographyProps={{ fontSize: 14 }}
-                />
-                <CardMedia
-                  component='img'
-                  image={`/api/images/${manga.coverFilename}`}
-                  alt={manga.title ?? ''}
-                />
-              </CardActionArea>
-            </Card>
-          </Grid2>
+          <MangaCard key={index} manga={manga}/>
         )}
-      </Grid2>
+      </Box>
       {pageCount > 0 &&
         <Stack alignItems='center'>
           <Pagination
