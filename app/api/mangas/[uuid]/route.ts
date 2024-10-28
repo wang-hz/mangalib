@@ -1,4 +1,4 @@
-import { findManga, findTags } from "@/script";
+import { findManga, findTags } from "@/app/script";
 
 export const GET = async (
   _: Request,

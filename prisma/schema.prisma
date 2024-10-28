@@ -11,16 +11,18 @@ datasource db {
 }
 
 model Manga {
-  pid              Int       @id @default(autoincrement())
-  uuid             String    @unique
-  path             String    @unique
-  coverFilename    String?   @map("cover_filename")
+  pid              Int        @id @default(autoincrement())
+  uuid             String     @unique
+  path             String     @unique
+  coverFilename    String?    @map("cover_filename")
   title            String?
-  originalTitle    String?   @map("original_title")
-  fullTitle        String?   @map("full_title")
-  fileModifiedTime DateTime? @map("file_modified_time")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @default(now()) @map("updated_at")
+  originalTitle    String?    @map("original_title")
+  fullTitle        String?    @map("full_title")
+  fileModifiedTime DateTime?  @map("file_modified_time")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @default(now()) @map("updated_at")
+  images           Image[]
+  mangaTags        MangaTag[]
 
   @@map("manga")
 }
@@ -34,6 +36,7 @@ model Image {
   filename  String   @unique
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @map("updated_at")
+  manga     Manga    @relation(fields: [mangaUuid], references: [uuid])
 
   @@index([mangaUuid])
   @@map("image")
@@ -69,6 +72,7 @@ model MangaTag {
   tagUuid   String   @map("tag_uuid")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @map("updated_at")
+  manga     Manga    @relation(fields: [mangaUuid], references: [uuid])
 
   @@unique([mangaUuid, tagUuid])
   @@map("manga_tag")

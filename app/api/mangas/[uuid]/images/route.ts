@@ -1,4 +1,4 @@
-import { findImages } from "@/script";
+import { findImages } from "@/app/script";
 
 export const GET = async (
   _: Request,

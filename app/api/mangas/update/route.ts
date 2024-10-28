@@ -1,5 +1,5 @@
 import { UpdateRecordStatus } from "@/app/models";
-import { findLastUpdateRecord, updateMangas } from "@/script";
+import { findLastUpdateRecord, updateMangas } from "@/app/script";
 
 export const GET = async () => {
   const updateRecord = await findLastUpdateRecord();

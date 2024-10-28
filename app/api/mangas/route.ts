@@ -1,4 +1,4 @@
-import { findMangasByPage } from "@/script";
+import { findMangasByPage } from "@/app/script";
 import { NextRequest } from "next/server";
 
 export const GET = async (request: NextRequest) => {

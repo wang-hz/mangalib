@@ -1,5 +1,5 @@
 import { CACHE_DIR } from "@/config";
-import { findImage } from "@/script";
+import { findImage } from "@/app/script";
 import AdmZip from "adm-zip";
 import { fileTypeFromBuffer } from "file-type";
 import fs from "fs-extra";
