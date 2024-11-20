@@ -27,16 +27,23 @@ export default function Images({ params }: { params: { uuid: string } }) {
     router.push(`/mangas/${params.uuid}/images?` + new URLSearchParams({ imageIndex: value.toString() }));
   };
 
+  const handleImageClick = () => {
+    if (imageIndex >= images.length) {
+      return;
+    }
+    router.push(`/mangas/${params.uuid}/images?` + new URLSearchParams({ imageIndex: (imageIndex + 1).toString() }));
+  };
+
   return (
     <Container sx={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 2, gap: 2 }}>
-      <Box sx={{ flex: 1, position: 'relative' }}>
+      <Box sx={{ flex: 1, position: 'relative', cursor: 'pointer' }} onClick={handleImageClick}>
         {currentImage &&
           <Image src={currentImage} alt={imageIndex.toString()} fill objectFit='contain'/>
         }
       </Box>
       <Box>
         <Slider
-          defaultValue={imageIndex}
+          value={imageIndex}
           step={1}
           min={1}
           max={images?.length}
