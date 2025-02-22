@@ -22,5 +22,5 @@ export const useImages = (mangaUuid: string) => {
 
 export const useMangasUpdateStatus = () => {
   const { data } = useSWR('/api/mangas/update', fetcher, { refreshInterval: 1000 });
-  return { mangasUpdateStatus: data?.status };
+  return { mangasUpdateStatus: data };
 };

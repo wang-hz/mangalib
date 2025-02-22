@@ -4,7 +4,11 @@ import { findLastUpdateRecord, updateMangas } from "@/app/script";
 export const GET = async () => {
   const updateRecord = await findLastUpdateRecord();
   return Response.json(
-    { status: updateRecord },
+    {
+      status: updateRecord?.status,
+      progress: updateRecord?.progress,
+      total: updateRecord?.total,
+    },
     { status: 200 }
   );
 };
