@@ -3,3 +3,8 @@ export enum UpdateRecordStatus {
   UPDATING = 'UPDATING',
   CREATING = 'CREATING'
 }
+
+export interface TagModel {
+  name: string,
+  type: string,
+}

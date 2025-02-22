@@ -1,4 +1,4 @@
-import { UpdateRecordStatus } from "@/app/models";
+import { TagModel, UpdateRecordStatus } from "@/app/models";
 import { getImages, getMangaPaths, parseMangaInfo } from "@/app/util";
 import { CACHE_DIR, MANGAS_DIR } from "@/config";
 import { Manga, PrismaClient } from '@prisma/client'
@@ -70,6 +70,41 @@ const createOrUpdateManga = async (path: string) => {
     });
 };
 
+export const updateManga = async ({ uuid, title, originalTitle, fullTitle, tags }: {
+  uuid: string,
+  title: string,
+  originalTitle: string,
+  fullTitle: string,
+  tags: Array<TagModel>
+}) => {
+  const manga = await prisma.manga.findUnique({ where: { uuid } });
+  if (!manga) {
+    return false;
+  }
+  for (const tag of tags) {
+    const newTag = await createTagIfNotExist(tag.name, tag.type);
+    const mangaTag = await prisma.mangaTag.findUnique({
+      where: {
+        mangaUuid_tagUuid: {
+          mangaUuid: manga.uuid,
+          tagUuid: newTag.uuid
+        }
+      }
+    });
+    if (!mangaTag) {
+      await prisma.mangaTag.create({ data: { mangaUuid: manga.uuid, tagUuid: newTag.uuid } });
+    }
+  }
+  await prisma.manga.update(({
+    where: { uuid },
+    data: {
+      title, originalTitle, fullTitle,
+      updatedAt: new Date(Date.now()),
+    }
+  }));
+  return true;
+};
+
 export const findLastUpdateRecord = async () =>
   prisma.updateRecord.findFirst({
     orderBy: { pid: 'desc' },
@@ -111,7 +146,7 @@ export const updateMangas = async () => {
     if (!fs.existsSync(manga.path)) {
       await prisma.$transaction([
         prisma.manga.delete({ where: { uuid: manga.uuid } }),
-        prisma.mangaTag.deleteMany({ where: {mangaUuid: manga.uuid } })
+        prisma.mangaTag.deleteMany({ where: { mangaUuid: manga.uuid } })
       ]);
     }
     updateRecord = await updateUpdateRecord({
@@ -193,12 +228,7 @@ const createTagIfNotExist = async (name: string, type: string | null) => {
       if (!!tag) {
         return tag;
       }
-      return prisma.tag.create({
-        data: {
-          uuid: v4(),
-          name, type
-        }
-      });
+      return prisma.tag.create({ data: { uuid: v4(), name, type } });
     });
 };
 
