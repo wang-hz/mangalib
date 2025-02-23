@@ -1,6 +1,7 @@
 "use client"
 
 import { useManga } from "@/app/hooks";
+import { TagModel } from "@/app/models";
 import {
   Button,
   Chip,
@@ -19,11 +20,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-interface Tag {
-  name: string,
-  type: string | null
-}
-
 export default function Manga({ params }: { params: { uuid: string } }) {
   const router = useRouter();
   const { manga } = useManga(params.uuid);
@@ -37,11 +33,11 @@ export default function Manga({ params }: { params: { uuid: string } }) {
     if (!Array.isArray(manga?.tags)) {
       return;
     }
-    setArtists(manga.tags.filter((tag: Tag) => tag.type === 'artist').map((tag: Tag) => tag.name));
-    setGroups(manga.tags.filter((tag: Tag) => tag.type === 'group').map((tag: Tag) => tag.name));
-    setEvents(manga.tags.filter((tag: Tag) => tag.type === 'event').map((tag: Tag) => tag.name));
-    setParodies(manga.tags.filter((tag: Tag) => tag.type === 'parody').map((tag: Tag) => tag.name));
-    setCustomTags(manga.tags.filter((tag: Tag) => !tag.type).map((tag: Tag) => tag.name));
+    setArtists(manga.tags.filter((tag: TagModel) => tag.type == 'artist').map((tag: TagModel) => tag.name));
+    setGroups(manga.tags.filter((tag: TagModel) => tag.type == 'group').map((tag: TagModel) => tag.name));
+    setEvents(manga.tags.filter((tag: TagModel) => tag.type == 'event').map((tag: TagModel) => tag.name));
+    setParodies(manga.tags.filter((tag: TagModel) => tag.type == 'parody').map((tag: TagModel) => tag.name));
+    setCustomTags(manga.tags.filter((tag: TagModel) => !tag.type).map((tag: TagModel) => tag.name));
   }, [manga]);
 
   const handleStartReadingButtonClick = () => {
