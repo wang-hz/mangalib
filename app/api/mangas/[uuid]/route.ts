@@ -1,4 +1,5 @@
-import { findManga, findTags, updateManga } from "@/app/script";
+import { findManga, updateManga } from "@/services/manga";
+import { findTags } from "@/services/tag";
 
 export const GET = async (
   _: Request,
