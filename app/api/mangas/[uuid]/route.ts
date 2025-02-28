@@ -35,7 +35,7 @@ export const GET = async (
     ));
 };
 
-export const PUT = async (
+export const PATCH = async (
   request: Request,
   { params }: { params: { uuid: string } }
 ) => {

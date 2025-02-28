@@ -5,6 +5,7 @@ export enum UpdateRecordStatus {
 }
 
 export interface TagModel {
+  uuid?: string;
   name: string,
-  type: string,
+  type: string | null,
 }

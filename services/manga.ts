@@ -1,4 +1,4 @@
-import { TagModel, UpdateRecordStatus } from "@/app/models";
+import { UpdateRecordStatus } from "@/app/models";
 import { getImages, getMangaPaths, parseMangaInfo } from "@/app/util";
 import { MANGAS_DIR } from "@/config";
 import { deleteImages } from "@/services/image";
@@ -71,30 +71,15 @@ const createOrUpdateManga = async (path: string) => {
     });
 };
 
-export const updateManga = async ({ uuid, title, originalTitle, fullTitle, tags }: {
+export const updateManga = async ({ uuid, title, originalTitle, fullTitle }: {
   uuid: string,
   title: string,
   originalTitle: string,
   fullTitle: string,
-  tags: Array<TagModel>
 }) => {
   const manga = await prisma.manga.findUnique({ where: { uuid } });
   if (!manga) {
     return false;
-  }
-  for (const tag of tags) {
-    const newTag = await createTagIfNotExist(tag.name, tag.type);
-    const mangaTag = await prisma.mangaTag.findUnique({
-      where: {
-        mangaUuid_tagUuid: {
-          mangaUuid: manga.uuid,
-          tagUuid: newTag.uuid
-        }
-      }
-    });
-    if (!mangaTag) {
-      await prisma.mangaTag.create({ data: { mangaUuid: manga.uuid, tagUuid: newTag.uuid } });
-    }
   }
   await prisma.manga.update(({
     where: { uuid },
@@ -168,4 +153,23 @@ export const findMangasByPage = async (skip: number, take: number) => {
 
 export const findManga = async (uuid: string) => {
   return prisma.manga.findUnique({ where: { uuid } });
+};
+
+export const addTag = async (mangaUuid: string, tagName: string, tagType: string | null) => {
+  const tag = await createTagIfNotExist(tagName, tagType);
+  const mangaTag = await prisma.mangaTag.findUnique({
+    where: {
+      mangaUuid_tagUuid: {
+        mangaUuid: mangaUuid,
+        tagUuid: tag.uuid,
+      },
+    },
+  });
+  if (!mangaTag) {
+    await prisma.mangaTag.create({ data: { mangaUuid, tagUuid: tag.uuid } });
+  }
+};
+
+export const deleteTag = async (mangaUuid: string, tagUuid: string) => {
+  return prisma.mangaTag.delete({ where: { mangaUuid_tagUuid: { mangaUuid, tagUuid } } });
 };
