@@ -3,7 +3,7 @@ import { getImages, getMangaPaths, parseMangaInfo } from "@/app/util";
 import { MANGAS_DIR } from "@/config";
 import { deleteImages } from "@/services/image";
 import { createTagIfNotExist } from "@/services/tag";
-import { createUpdateRecord, updateUpdateRecord } from "@/services/update-record";
+import { createUpdateRecord, updateUpdateRecord } from "@/services/updateRecord";
 import { Manga, Prisma } from "@prisma/client";
 import fs from "fs-extra";
 import { v4 } from "uuid";

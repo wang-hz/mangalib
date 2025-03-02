@@ -1,7 +1,7 @@
 import { ApiError } from "@/app/errors";
 import { UpdateRecordStatus } from "@/app/models";
 import { updateMangas } from "@/services/manga";
-import { findLastUpdateRecord } from "@/services/update-record";
+import { findLastUpdateRecord } from "@/services/updateRecord";
 
 export const GET = async () => findLastUpdateRecord()
   .then(updateRecord => Response.json({
@@ -12,7 +12,7 @@ export const GET = async () => findLastUpdateRecord()
 
 export const POST = async () => findLastUpdateRecord()
   .then(updateRecord => {
-    if (updateRecord != null && updateRecord.status !== UpdateRecordStatus.ALL_UPDATED.toString()) {
+    if (updateRecord !== null && updateRecord.status !== UpdateRecordStatus.ALL_UPDATED.toString()) {
       throw new ApiError('Update task of mangas is already running', 409);
     }
     updateMangas();
