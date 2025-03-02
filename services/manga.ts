@@ -4,7 +4,7 @@ import { MANGAS_DIR } from "@/config";
 import { deleteImages } from "@/services/image";
 import { createTagIfNotExist } from "@/services/tag";
 import { createUpdateRecord, updateUpdateRecord } from "@/services/update-record";
-import { Manga } from "@prisma/client";
+import { Manga, Prisma } from "@prisma/client";
 import fs from "fs-extra";
 import { v4 } from "uuid";
 import { prisma } from "./base";
@@ -73,9 +73,9 @@ const createOrUpdateManga = async (path: string) => {
 
 export const updateManga = async ({ uuid, title, originalTitle, fullTitle }: {
   uuid: string,
-  title: string,
-  originalTitle: string,
-  fullTitle: string,
+  title?: string,
+  originalTitle?: string,
+  fullTitle?: string,
 }) => {
   const manga = await prisma.manga.findUnique({ where: { uuid } });
   if (!manga) {
@@ -84,9 +84,11 @@ export const updateManga = async ({ uuid, title, originalTitle, fullTitle }: {
   await prisma.manga.update(({
     where: { uuid },
     data: {
-      title, originalTitle, fullTitle,
+      title: title ?? Prisma.skip,
+      originalTitle: originalTitle ?? Prisma.skip,
+      fullTitle: fullTitle ?? Prisma.skip,
       updatedAt: new Date(Date.now()),
-    }
+    },
   }));
   return true;
 };
@@ -157,17 +159,22 @@ export const findManga = async (uuid: string) => {
 
 export const addTag = async (mangaUuid: string, tagName: string, tagType: string | null) => {
   const tag = await createTagIfNotExist(tagName, tagType);
-  const mangaTag = await prisma.mangaTag.findUnique({
+  let mangaTag = await prisma.mangaTag.findUnique({
     where: {
       mangaUuid_tagUuid: {
         mangaUuid: mangaUuid,
         tagUuid: tag.uuid,
       },
     },
+    select: { tagUuid: true },
   });
   if (!mangaTag) {
-    await prisma.mangaTag.create({ data: { mangaUuid, tagUuid: tag.uuid } });
+    mangaTag = await prisma.mangaTag.create({
+      data: { mangaUuid, tagUuid: tag.uuid },
+      select: { tagUuid: true },
+    });
   }
+  return mangaTag;
 };
 
 export const deleteTag = async (mangaUuid: string, tagUuid: string) => {

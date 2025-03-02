@@ -1,37 +1,25 @@
+import { ApiError } from "@/app/errors";
 import { UpdateRecordStatus } from "@/app/models";
 import { updateMangas } from "@/services/manga";
 import { findLastUpdateRecord } from "@/services/update-record";
 
-export const GET = async () => {
-  const updateRecord = await findLastUpdateRecord();
-  return Response.json(
-    {
-      status: updateRecord?.status,
-      progress: updateRecord?.progress,
-      total: updateRecord?.total,
-    },
-    { status: 200 }
-  );
-};
+export const GET = async () => findLastUpdateRecord()
+  .then(updateRecord => Response.json({
+    status: updateRecord?.status,
+    progress: updateRecord?.progress,
+    total: updateRecord?.total,
+  }));
 
-export const POST = async () => {
-  const updateRecord = await findLastUpdateRecord();
-  if (updateRecord != null && updateRecord.status !== UpdateRecordStatus.ALL_UPDATED.toString()) {
-    return Response.json(
-      { message: 'update task of mangas is already running' },
-      { status: 409 }
-    );
-  }
-  try {
+export const POST = async () => findLastUpdateRecord()
+  .then(updateRecord => {
+    if (updateRecord != null && updateRecord.status !== UpdateRecordStatus.ALL_UPDATED.toString()) {
+      throw new ApiError('Update task of mangas is already running', 409);
+    }
     updateMangas();
-  } catch (error) {
-    return Response.json(
-      { message: error },
-      { status: 500 }
-    )
-  }
-  return Response.json(
-    { message: 'update task of mangas started' },
-    { status: 202 }
-  );
-};
+  })
+  .catch(error => {
+    if (error instanceof ApiError) {
+      return Response.json({ message: error.message }, { status: error.status });
+    }
+    return Response.json({ message: 'Unexpected error' }, { status: 500 });
+  });
