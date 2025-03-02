@@ -1,3 +1,5 @@
+# mangalib
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
@@ -57,7 +59,7 @@ prisma init --datasource-provider sqlite
 4. Apply the modified SQL by running:
 
     ```shell
-    npx prisma migrate dev
+    prisma migrate dev
     ```
 
 5. Regenerate Prisma Client
