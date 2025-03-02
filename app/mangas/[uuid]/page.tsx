@@ -1,7 +1,6 @@
 "use client"
 
 import { useManga } from "@/app/hooks";
-import { TagModel } from "@/app/models";
 import {
   Button,
   Chip,
@@ -33,11 +32,26 @@ export default function Manga({ params }: { params: { uuid: string } }) {
     if (!Array.isArray(manga?.tags)) {
       return;
     }
-    setArtists(manga.tags.filter((tag: TagModel) => tag.type == 'artist').map((tag: TagModel) => tag.name));
-    setGroups(manga.tags.filter((tag: TagModel) => tag.type == 'group').map((tag: TagModel) => tag.name));
-    setEvents(manga.tags.filter((tag: TagModel) => tag.type == 'event').map((tag: TagModel) => tag.name));
-    setParodies(manga.tags.filter((tag: TagModel) => tag.type == 'parody').map((tag: TagModel) => tag.name));
-    setCustomTags(manga.tags.filter((tag: TagModel) => !tag.type).map((tag: TagModel) => tag.name));
+    setArtists(manga.tags
+      .filter(({ type }: { type: string }) => type === 'artist')
+      .map(({ name }: { name: string }) => name)
+    );
+    setGroups(manga.tags
+      .filter(({ type }: { type: string }) => type === 'group')
+      .map(({ name }: { name: string }) => name)
+    );
+    setEvents(manga.tags
+      .filter(({ type }: { type: string }) => type === 'event')
+      .map(({ name }: { name: string }) => name)
+    );
+    setParodies(manga.tags
+      .filter(({ type }: { type: string }) => type === 'parody')
+      .map(({ name }: { name: string }) => name)
+    );
+    setCustomTags(manga.tags
+      .filter(({ type }: { type: string }) => !type)
+      .map(({ name }: { name: string }) => name)
+    );
   }, [manga]);
 
   const handleStartReadingButtonClick = () => {

@@ -3,9 +3,3 @@ export enum UpdateRecordStatus {
   UPDATING = 'UPDATING',
   CREATING = 'CREATING'
 }
-
-export interface TagModel {
-  uuid?: string;
-  name: string,
-  type: string | null,
-}
