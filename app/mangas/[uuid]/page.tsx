@@ -1,10 +1,16 @@
 "use client"
 
 import { useManga } from "@/app/hooks";
+import { updateManga } from "@/app/requests";
 import {
   Button,
   Chip,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Link,
   Paper,
   Stack,
@@ -13,20 +19,22 @@ import {
   TableCell,
   TableContainer,
   TableRow,
+  TextField,
   Typography
 } from "@mui/material";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 
 export default function Manga({ params }: { params: { uuid: string } }) {
   const router = useRouter();
-  const { manga } = useManga(params.uuid);
+  const { manga, reloadManga } = useManga(params.uuid);
   const [artists, setArtists] = useState<string[]>([]);
   const [groups, setGroups] = useState<string[]>([]);
   const [events, setEvents] = useState<string[]>([]);
   const [parodies, setParodies] = useState<string[]>([]);
   const [customTags, setCustomTags] = useState<string[]>([]);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!Array.isArray(manga?.tags)) {
@@ -54,11 +62,19 @@ export default function Manga({ params }: { params: { uuid: string } }) {
     );
   }, [manga]);
 
-  const handleStartReadingButtonClick = () => {
+  const handleReadClick = () => {
     router.push(`/mangas/${params.uuid}/images`);
   };
 
-  return (
+  const handleEditClick = () => {
+    setEditDialogOpen(true);
+  };
+
+  const handleEditDialogClose = () => {
+    setEditDialogOpen(false);
+  };
+
+  return <>
     <Container sx={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
       <Stack direction='row' gap={4}>
         <Link href={`/mangas/${params.uuid}/images`}>
@@ -115,8 +131,9 @@ export default function Manga({ params }: { params: { uuid: string } }) {
               }
             </Stack>
           </Stack>
-          <Stack alignItems='flex-start'>
-            <Button variant='contained' onClick={handleStartReadingButtonClick}>read</Button>
+          <Stack alignItems='flex-start' direction='row' gap={2}>
+            <Button variant='contained' onClick={handleReadClick}>read</Button>
+            <Button variant='outlined' onClick={handleEditClick}>edit</Button>
           </Stack>
         </Stack>
       </Stack>
@@ -151,5 +168,59 @@ export default function Manga({ params }: { params: { uuid: string } }) {
         </Table>
       </TableContainer>
     </Container>
-  );
+    <Dialog
+      open={editDialogOpen}
+      onClose={handleEditDialogClose}
+      PaperProps={{
+        component: 'form',
+        onSubmit: async (event: FormEvent<HTMLFormElement>) => {
+          event.preventDefault();
+          const formData = new FormData(event.currentTarget);
+          const formJson = Object.fromEntries((formData as any).entries());
+          const title = formJson.title;
+          const originalTitle = formJson.originalTitle;
+          const fullTitle = formJson.fullTitle;
+          await updateManga(params.uuid, { title, originalTitle, fullTitle });
+          await reloadManga();
+          handleEditDialogClose();
+        },
+      }}
+    >
+      <DialogTitle>EDIT</DialogTitle>
+      <DialogContent>
+        <DialogContentText></DialogContentText>
+        <TextField
+          autoFocus
+          fullWidth
+          defaultValue={manga?.title}
+          margin='dense'
+          name='title'
+          label='Title'
+          variant='standard'
+        />
+        <TextField
+          autoFocus
+          fullWidth
+          defaultValue={manga?.originalTitle}
+          margin='dense'
+          name='originalTitle'
+          label='Original Title'
+          variant='standard'
+        />
+        <TextField
+          autoFocus
+          fullWidth
+          defaultValue={manga?.fullTitle}
+          margin='dense'
+          name='fullTitle'
+          label='Full Title'
+          variant='standard'
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleEditDialogClose}>cancel</Button>
+        <Button type='submit'>save</Button>
+      </DialogActions>
+    </Dialog>
+  </>;
 }

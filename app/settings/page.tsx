@@ -32,11 +32,7 @@ export default function Settings() {
     [mangasUpdateStatus]
   );
 
-  const handleUpdateLibraryClick = () => {
-    updateMangas()
-      .then(() => setUpdating(true))
-      .catch((error) => console.error(error));
-  };
+  const handleUpdateLibraryClick = () => updateMangas().then(() => setUpdating(true));
 
   return (
     <Container>

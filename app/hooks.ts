@@ -3,8 +3,8 @@ import useSWR from "swr";
 const fetcher = (url: string) => fetch(url).then((response) => response.json());
 
 export const useManga = (uuid: string) => {
-  const { data } = useSWR(`/api/mangas/${uuid}`, fetcher);
-  return { manga: data };
+  const { data, mutate } = useSWR(`/api/mangas/${uuid}`, fetcher);
+  return { manga: data, reloadManga: mutate };
 };
 
 export const usePagedMangas = (pageIndex: number, pageSize: number) => {
